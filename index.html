@@ -33,6 +33,8 @@
       --cf:       #F38020;
     }
     html { scroll-behavior: smooth; }
+    /* Offset anchor links so sticky nav+toc don't cover the heading */
+    section[id] { scroll-margin-top: 106px; }
     body {
       background: var(--bg);
       color: var(--white);
@@ -253,38 +255,131 @@
     }
 
     /* ── TOC STRIP ───────────────────────────────── */
+    /* ── TOC — DESKTOP: fixed left sidebar ─────── */
     #toc {
+      display: none; /* hidden by default, shown on desktop */
+    }
+    .toc-inner { display: none; }
+
+    /* Desktop sidebar */
+    #toc-sidebar {
+      display: none; /* shown via media query */
+    }
+
+    /* ── TOC — MOBILE: fixed bottom bar ─────────── */
+    #toc-mobile {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 850;
+      background: rgba(8,11,16,0.97);
+      backdrop-filter: blur(16px);
       border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      background: var(--bg2);
-      padding: 0 2rem;
+      display: flex;
       overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
     }
-    .toc-inner {
-      max-width: 1200px; margin: 0 auto;
-      display: flex; align-items: stretch;
-    }
-    .toc-item {
-      display: flex; align-items: center; gap: 10px;
-      padding: 14px 20px;
-      border-right: 1px solid var(--border);
+    #toc-mobile::-webkit-scrollbar { display: none; }
+    .toc-mobile-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      padding: 8px 14px 10px;
       text-decoration: none;
       white-space: nowrap;
+      flex-shrink: 0;
+      border-right: 1px solid var(--border);
       transition: background 0.15s;
+      min-width: 64px;
     }
-    .toc-item:first-child { border-left: 1px solid var(--border); }
-    .toc-item:hover { background: var(--card); }
-    .toc-num {
+    .toc-mobile-item:last-child { border-right: none; }
+    .toc-mobile-item:active { background: var(--card); }
+    .toc-mobile-item.active { background: var(--card); }
+    .toc-mobile-num {
       font-family: 'Space Mono', monospace;
-      font-size: 10px;
+      font-size: 8px;
       color: var(--muted);
+      line-height: 1;
     }
-    .toc-label {
-      font-size: 12px;
+    .toc-mobile-label {
       font-family: 'DM Mono', monospace;
+      font-size: 9px;
       color: var(--muted2);
+      line-height: 1;
     }
-    .toc-item:hover .toc-label { color: var(--white); }
+    .toc-mobile-item.active .toc-mobile-num { color: var(--indigo2); }
+    .toc-mobile-item.active .toc-mobile-label { color: var(--white); }
+
+    /* Extra bottom padding on body so content doesn't hide behind mobile TOC */
+    body { padding-bottom: 52px; }
+
+    @media(min-width: 769px) {
+      /* Hide mobile bottom bar on desktop */
+      #toc-mobile { display: none; }
+      body { padding-bottom: 0; }
+
+      /* Show desktop sidebar */
+      #toc-sidebar {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 56px;
+        left: 0;
+        bottom: 0;
+        width: 180px;
+        background: rgba(8,11,16,0.97);
+        backdrop-filter: blur(12px);
+        border-right: 1px solid var(--border);
+        z-index: 800;
+        padding: 16px 0;
+        overflow-y: auto;
+      }
+      #toc-sidebar .sidebar-title {
+        font-family: 'Space Mono', monospace;
+        font-size: 9px;
+        letter-spacing: 0.15em;
+        color: var(--muted);
+        padding: 0 16px 12px;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 8px;
+        text-transform: uppercase;
+      }
+      .toc-sidebar-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 16px;
+        text-decoration: none;
+        transition: background 0.15s;
+        border-left: 2px solid transparent;
+      }
+      .toc-sidebar-item:hover { background: var(--card); }
+      .toc-sidebar-item.active {
+        background: var(--card);
+        border-left-color: var(--indigo);
+      }
+      .toc-sidebar-item.active .toc-sidebar-num { color: var(--indigo2); }
+      .toc-sidebar-item.active .toc-sidebar-label { color: var(--white); }
+      .toc-sidebar-num {
+        font-family: 'Space Mono', monospace;
+        font-size: 9px;
+        color: var(--muted);
+        width: 20px;
+        flex-shrink: 0;
+      }
+      .toc-sidebar-label {
+        font-family: 'DM Mono', monospace;
+        font-size: 11px;
+        color: var(--muted2);
+      }
+
+      /* Push main content right to make room for sidebar */
+      body > *:not(nav):not(#toc-sidebar):not(#toc-mobile) {
+        margin-left: 180px;
+      }
+    }
 
     /* ── SECTION WRAPPER ─────────────────────────── */
     .section {
@@ -737,11 +832,119 @@
       margin: 6px 0;
     }
 
-    @media(max-width:768px) {
+    /* ── MOBILE FOUNDATION ──────────────────────── */
+    html { max-width: 100%; overflow-x: hidden; }
+    body { max-width: 100vw; overflow-x: hidden; }
+
+    /* Code blocks always scroll internally, never break layout */
+    .code-block { max-width: 100%; overflow: hidden; }
+    pre {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      max-width: 100%;
+    }
+    /* SQL cards same treatment */
+    .sql-card { max-width: 100%; overflow: hidden; }
+    .sql-card pre { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+    /* Tables scroll on mobile */
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+    .ref-table { min-width: 400px; }
+    .ref-table td { word-break: break-word; }
+
+    /* Step cards never overflow */
+    .step-card { min-width: 0; }
+    .step-body { min-width: 0; overflow: hidden; word-break: break-word; }
+
+    /* TOC strip scrolls */
+    #toc { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+    /* Cheat cards */
+    .cheat-cmd { word-break: break-all; }
+
+    @media(max-width: 768px) {
+      /* Nav */
       .nav-links { display: none; }
-      .hero-title { font-size: 52px; }
-      .sec-header { flex-direction: column; gap: 10px; }
-      .two-col, .sql-grid { grid-template-columns: 1fr; }
+      nav { padding: 0 1rem; }
+
+      /* Hero */
+      .hero-title { font-size: 44px; }
+      .hero-sub { font-size: 15px; padding: 0 8px; }
+      .hero-badges { gap: 6px; padding: 0 8px; }
+      .badge { font-size: 10px; padding: 4px 10px; }
+      .hero-cta { flex-direction: column; align-items: center; }
+      .btn-primary, .btn-secondary { width: 220px; justify-content: center; }
+
+      /* Sections */
+      .section { padding: 56px 1rem; }
+      .sec-header { flex-direction: column; gap: 8px; }
+      .sec-header .accent-bar { height: 3px; width: 40px; min-height: 3px; }
+      .sec-title-block h2 { font-size: 24px; }
+      .section-intro { font-size: 14px; }
+
+      /* Step cards */
+      .step-card { grid-template-columns: 36px 1fr; }
+      .step-num-col { padding-top: 14px; }
+      .step-body { padding: 14px 12px; }
+      .step-body h3 { font-size: 14px; }
+      .step-body p { font-size: 13px; }
+      .note-text { font-size: 11px; }
+
+      /* Code */
+      pre { font-size: 11.5px; padding: 12px 10px; line-height: 1.55; }
+      .code-header { padding: 6px 10px; flex-wrap: wrap; gap: 6px; }
+      .code-label { font-size: 9px; }
+
+      /* SQL */
+      .sql-grid { grid-template-columns: 1fr; }
+      .sql-card pre { font-size: 11px; padding: 10px; }
+      .sql-card-header { font-size: 9px; padding: 8px 10px; }
+
+      /* Tables — wrap in scrollable div */
+      .ref-table { font-size: 12px; }
+      .ref-table thead th { font-size: 9px; padding: 8px 8px; }
+      .ref-table td { padding: 8px 8px; font-size: 12px; }
+      .ref-table td:first-child { font-size: 11px; }
+
+      /* Grids → single col */
+      .two-col { grid-template-columns: 1fr; }
+      .sql-grid { grid-template-columns: 1fr; }
+      .cheat-grid { grid-template-columns: 1fr; }
+
+      /* Flow diagram → vertical */
+      .flow-diagram { flex-direction: column; align-items: stretch; gap: 8px; padding: 14px; }
+      .flow-arrow { transform: rotate(90deg); text-align: center; padding: 0; font-size: 20px; }
+      .flow-node { min-width: unset; }
+
+      /* Cheatsheet */
+      .cheat-card-header { font-size: 8px; }
+      .cheat-cmd { font-size: 10px; padding: 7px 8px; }
+      .cheat-desc { font-size: 10px; padding: 7px 8px; }
+
+      /* Troubleshoot */
+      .trouble-problem { font-size: 12px; }
+      .trouble-header { padding: 12px 12px; gap: 8px; }
+      .trouble-body { padding: 0 12px; }
+      .trouble-card.open .trouble-body { padding: 12px 12px 16px; }
+
+      /* Info boxes */
+      .info-box { flex-direction: column; gap: 6px; }
+      .info-box p { font-size: 13px; }
+
+      /* Footer */
+      footer { padding: 28px 1rem; }
+      .footer-links { flex-wrap: wrap; gap: 12px; }
+      .footer-links a { font-size: 11px; }
+    }
+
+    @media(max-width: 420px) {
+      .hero-title { font-size: 34px; }
+      .hero-tag { font-size: 9px; }
+      pre { font-size: 10.5px; }
+      .section { padding: 44px 0.75rem; }
+      /* Cheat rows stack vertically on tiny screens */
+      .cheat-row { grid-template-columns: 1fr; }
+      .cheat-cmd { border-right: none; border-bottom: 1px solid var(--border); }
     }
   </style>
 </head>
@@ -794,18 +997,31 @@
 </section>
 
 <!-- ── TOC STRIP ─────────────────────────────────────────────── -->
-<div id="toc">
-  <div class="toc-inner">
-    <a href="#terminal"    class="toc-item"><span class="toc-num">01</span><span class="toc-label">Terminal</span></a>
-    <a href="#project"     class="toc-item"><span class="toc-num">02</span><span class="toc-label">New Project</span></a>
-    <a href="#github"      class="toc-item"><span class="toc-num">03</span><span class="toc-label">GitHub</span></a>
-    <a href="#supabase"    class="toc-item"><span class="toc-num">04</span><span class="toc-label">Supabase</span></a>
-    <a href="#envvars"     class="toc-item"><span class="toc-num">05</span><span class="toc-label">Env Vars</span></a>
-    <a href="#cloudflare"  class="toc-item"><span class="toc-num">06</span><span class="toc-label">Cloudflare</span></a>
-    <a href="#vercel"      class="toc-item"><span class="toc-num">07</span><span class="toc-label">Vercel</span></a>
-    <a href="#troubleshoot"class="toc-item"><span class="toc-num">08</span><span class="toc-label">Troubleshoot</span></a>
-    <a href="#cheatsheet"  class="toc-item"><span class="toc-num">09</span><span class="toc-label">Cheatsheet</span></a>
-  </div>
+<!-- ── DESKTOP SIDEBAR NAV ───────────────────────────────── -->
+<nav id="toc-sidebar">
+  <div class="sidebar-title">// Contents</div>
+  <a href="#terminal"     class="toc-sidebar-item"><span class="toc-sidebar-num">01</span><span class="toc-sidebar-label">Terminal</span></a>
+  <a href="#project"      class="toc-sidebar-item"><span class="toc-sidebar-num">02</span><span class="toc-sidebar-label">New Project</span></a>
+  <a href="#github"       class="toc-sidebar-item"><span class="toc-sidebar-num">03</span><span class="toc-sidebar-label">GitHub</span></a>
+  <a href="#supabase"     class="toc-sidebar-item"><span class="toc-sidebar-num">04</span><span class="toc-sidebar-label">Supabase</span></a>
+  <a href="#envvars"      class="toc-sidebar-item"><span class="toc-sidebar-num">05</span><span class="toc-sidebar-label">Env Vars</span></a>
+  <a href="#cloudflare"   class="toc-sidebar-item"><span class="toc-sidebar-num">06</span><span class="toc-sidebar-label">Cloudflare</span></a>
+  <a href="#vercel"       class="toc-sidebar-item"><span class="toc-sidebar-num">07</span><span class="toc-sidebar-label">Vercel</span></a>
+  <a href="#troubleshoot" class="toc-sidebar-item"><span class="toc-sidebar-num">08</span><span class="toc-sidebar-label">Troubleshoot</span></a>
+  <a href="#cheatsheet"   class="toc-sidebar-item"><span class="toc-sidebar-num">09</span><span class="toc-sidebar-label">Cheatsheet</span></a>
+</nav>
+
+<!-- ── MOBILE BOTTOM TAB BAR ─────────────────────────────── -->
+<div id="toc-mobile">
+  <a href="#terminal"     class="toc-mobile-item"><span class="toc-mobile-num">01</span><span class="toc-mobile-label">Terminal</span></a>
+  <a href="#project"      class="toc-mobile-item"><span class="toc-mobile-num">02</span><span class="toc-mobile-label">Project</span></a>
+  <a href="#github"       class="toc-mobile-item"><span class="toc-mobile-num">03</span><span class="toc-mobile-label">GitHub</span></a>
+  <a href="#supabase"     class="toc-mobile-item"><span class="toc-mobile-num">04</span><span class="toc-mobile-label">Supabase</span></a>
+  <a href="#envvars"      class="toc-mobile-item"><span class="toc-mobile-num">05</span><span class="toc-mobile-label">Env Vars</span></a>
+  <a href="#cloudflare"   class="toc-mobile-item"><span class="toc-mobile-num">06</span><span class="toc-mobile-label">Cloudflare</span></a>
+  <a href="#vercel"       class="toc-mobile-item"><span class="toc-mobile-num">07</span><span class="toc-mobile-label">Vercel</span></a>
+  <a href="#troubleshoot" class="toc-mobile-item"><span class="toc-mobile-num">08</span><span class="toc-mobile-label">Fixes</span></a>
+  <a href="#cheatsheet"   class="toc-mobile-item"><span class="toc-mobile-num">09</span><span class="toc-mobile-label">Cheat</span></a>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════
@@ -960,7 +1176,7 @@ npx tailwindcss init -p</pre></div>
     </div>
 
     <div class="label reveal" style="margin-top:40px">Project structure — what everything is</div>
-    <table class="ref-table reveal">
+    <div class="table-wrap"><table class="ref-table reveal">
       <thead><tr><th>Path</th><th>What it is</th></tr></thead>
       <tbody>
         <tr><td>src/</td><td>All your source code lives here — this is where you work</td></tr>
@@ -977,7 +1193,7 @@ npx tailwindcss init -p</pre></div>
         <tr><td>node_modules/</td><td>Installed packages — never edit or upload this folder</td></tr>
         <tr><td>dist/</td><td>Built production files — created by npm run build</td></tr>
       </tbody>
-    </table>
+    </table></div>
   </div>
 </section>
 
@@ -1046,7 +1262,7 @@ git push -u origin main</pre></div>
     </div>
 
     <div class="label gh-lbl reveal" style="margin-top:36px">Everyday workflow</div>
-    <table class="ref-table reveal">
+    <div class="table-wrap"><table class="ref-table reveal">
       <thead><tr><th>Command</th><th>What it does</th></tr></thead>
       <tbody>
         <tr><td>git status</td><td>See what files changed since last commit</td></tr>
@@ -1060,7 +1276,7 @@ git push -u origin main</pre></div>
         <tr><td>git stash</td><td>Temporarily save uncommitted changes</td></tr>
         <tr><td>git stash pop</td><td>Restore stashed changes</td></tr>
       </tbody>
-    </table>
+    </table></div>
 
     <div class="label gh-lbl reveal" style="margin-top:28px">Your .gitignore file — required for every project</div>
     <div class="code-block reveal">
@@ -1282,7 +1498,7 @@ WHERE tablename = 'tracks';</pre>
     </div>
 
     <div class="label supa-lbl reveal" style="margin-top:36px">Auth SDK Calls</div>
-    <table class="ref-table reveal">
+    <div class="table-wrap"><table class="ref-table reveal">
       <thead><tr><th>Action</th><th>Code</th></tr></thead>
       <tbody>
         <tr><td>Register</td><td><code>supabase.auth.signUp({ email, password })</code></td></tr>
@@ -1294,10 +1510,10 @@ WHERE tablename = 'tracks';</pre>
         <tr><td>Update user</td><td><code>supabase.auth.updateUser({ email: 'new@email.com' })</code></td></tr>
         <tr><td>Password reset</td><td><code>supabase.auth.resetPasswordForEmail(email)</code></td></tr>
       </tbody>
-    </table>
+    </table></div>
 
     <div class="label supa-lbl reveal" style="margin-top:28px">Database + Storage SDK Calls</div>
-    <table class="ref-table reveal">
+    <div class="table-wrap"><table class="ref-table reveal">
       <thead><tr><th>Action</th><th>Code</th></tr></thead>
       <tbody>
         <tr><td>Select all</td><td><code>supabase.from('tracks').select('*')</code></td></tr>
@@ -1310,7 +1526,7 @@ WHERE tablename = 'tracks';</pre>
         <tr><td>Get URL</td><td><code>supabase.storage.from('bucket').getPublicUrl(path)</code></td></tr>
         <tr><td>Delete file</td><td><code>supabase.storage.from('bucket').remove([path])</code></td></tr>
       </tbody>
-    </table>
+    </table></div>
   </div>
 </section>
 
@@ -1571,14 +1787,14 @@ VITE_CLOUDFLARE_WORKER_URL=https://my-worker.workers.dev</pre></div>
         <div class="step-body">
           <h3>Verify build settings</h3>
           <p>Usually auto-detected. Confirm these are correct:</p>
-          <table class="ref-table" style="margin:10px 0">
+          <div class="table-wrap"><table class="ref-table" style="margin:10px 0">
             <tbody>
               <tr><td>Framework Preset</td><td>Vite</td></tr>
               <tr><td>Build Command</td><td><code>npm run build</code></td></tr>
               <tr><td>Output Directory</td><td><code>dist</code></td></tr>
               <tr><td>Install Command</td><td><code>npm install</code></td></tr>
             </tbody>
-          </table>
+          </table></div>
         </div>
       </div>
       <div class="step-card reveal">
@@ -1978,17 +2194,39 @@ git push</pre></div>
   }
 
   // ── ACTIVE NAV ──────────────────────────────────────────────
-  const sections = document.querySelectorAll('section[id], div[id="toc"]');
-  const navLinks = document.querySelectorAll('.nav-links a');
-  window.addEventListener('scroll', () => {
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks     = document.querySelectorAll('.nav-links a');
+  const sidebarLinks = document.querySelectorAll('.toc-sidebar-item');
+  const mobileLinks  = document.querySelectorAll('.toc-mobile-item');
+
+  function updateActive() {
     let current = '';
     sections.forEach(s => {
-      if (window.scrollY >= s.offsetTop - 80) current = s.id;
+      if (window.scrollY >= s.offsetTop - 140) current = s.id;
     });
+
+    // Top nav highlight
     navLinks.forEach(a => {
       a.style.color = a.getAttribute('href') === '#' + current ? 'var(--white)' : '';
     });
-  }, { passive: true });
+
+    // Desktop sidebar
+    sidebarLinks.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+    });
+
+    // Mobile bottom bar — highlight + scroll active into center
+    mobileLinks.forEach(a => {
+      const isActive = a.getAttribute('href') === '#' + current;
+      a.classList.toggle('active', isActive);
+      if (isActive) {
+        a.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+    });
+  }
+
+  window.addEventListener('scroll', updateActive, { passive: true });
+  updateActive();
 
   // ── PDF DOWNLOAD ────────────────────────────────────────────
   // Wire up PDF buttons — will link to PDF when hosted
