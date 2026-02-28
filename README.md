@@ -25,7 +25,7 @@ A practical, no-nonsense reference guide for developers building and deploying m
 
 ## Formats
 
-- **Website** — live at [https://gfbtools.github.io/the-stack/](#) *(update with your URL)*
+- **Website** — live at [https://gfbtools.github.io/the-stack/#hero](#) *(update with your URL)*
 - **PDF** — download [`The_Stack_Guide.pdf`](./The_Stack_Guide.pdf) for offline reference
 
 ---
