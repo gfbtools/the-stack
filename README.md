@@ -25,7 +25,7 @@
 
 ## What This Is
 
-The Stack is a no-fluff developer reference guide covering the exact workflow used to build and deploy production web apps — from the first terminal command to a live URL with a real database, user auth, file storage, and protected API keys.
+The Stack is a real deal developer reference guide covering the exact workflow used to build and deploy production web apps — from the first terminal command to a live URL with a real database, user auth, file storage, and protected API keys.
 
 Not a course. Not a tutorial series. A field guide. The kind you keep open in a second tab while you're building.
 
